@@ -61,11 +61,6 @@ public class TodoUtil {
 		System.out.println( "< 일정 편집 >\n"
 				+ "편집할 일정의 번호 입력 >");
 		int i = sc.nextInt();
-		
-		if(i < 0 || i > l.getList().size()){
-			System.out.println("존재하지 않는 일정입니다.");
-			return;
-		}
 		System.out.println("새로운 제목 입력 > ");
 		String new_title = sc.next();
 		while(new_title.isEmpty() || l.isDuplicate(new_title )>0) {
