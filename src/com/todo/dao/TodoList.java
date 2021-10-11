@@ -24,7 +24,7 @@ public class TodoList {
 
 	public int addItem(TodoItem t) {
 		String sql = "insert into list (title, memo, category, current_date, due_date)"
-				+ " values (?,?,?,?,?)";
+				+ " values (?,?,?,?,?);";
 		PreparedStatement pstmt;
 		int count =0;
 		try {
@@ -35,6 +35,7 @@ public class TodoList {
 			pstmt.setString(4, t.getCurrent_date());
 			pstmt.setString(5, t.getDue_date());
 			count = pstmt.executeUpdate();
+			pstmt.close();
 		} catch (SQLException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -42,14 +43,41 @@ public class TodoList {
 		return count;
 	} 
 
-	public void deleteItem(int t) {
-		list.remove(t);
+	public int deleteItem(int i) {
+		String sql = "delete from list where id=?;";
+		PreparedStatement pstmt;
+		int count=0;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setInt(1, i);
+			count = pstmt.executeUpdate();
+			pstmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return count; 
 	}
 
-	void editItem(TodoItem t, TodoItem updated) {
-		int index = list.indexOf(t);
-		list.remove(index);
-		list.add(updated);
+	public int updateItem(TodoItem t) {
+		String sql = "Update list set title=?, memo=?, category=?, current_date=?, due_date=?"
+				+"where id=?;";
+		PreparedStatement pstmt;
+		int count=0;
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, t.getTitle());
+			pstmt.setString(2, t.getDesc());
+			pstmt.setString(3, t.getCategory());
+			pstmt.setString(4, t.getCurrent_date());
+			pstmt.setString(5, t.getDue_date());
+			count = pstmt.executeUpdate();
+			pstmt.close();
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return count; 
 	}
 
 	public ArrayList<TodoItem> getList() {
@@ -58,6 +86,108 @@ public class TodoList {
 		try {
 			stmt = conn.createStatement();
 			String sql ="SELECT * FROM list";
+			ResultSet rs = stmt.executeQuery(sql);
+			while(rs.next()) {
+				int id = rs.getInt("id");
+				String category = rs.getString("category");
+				String title = rs.getString("title");
+				String description = rs.getString("memo");
+				String due_date = rs.getString("due_date");
+				String current_date = rs.getString("current_date");
+				TodoItem t = new TodoItem(title,description,category,due_date);
+				t.setId(id);
+				t.setCurrent_date(current_date);
+				list.add(t);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return list;
+	}
+	
+	public ArrayList<TodoItem> getList(String keyword) {
+		ArrayList<TodoItem> list = new ArrayList<TodoItem>();
+		PreparedStatement pstmt;
+		keyword = "%"+keyword+"%";
+		try {
+			String sql ="SELECT * FROM list WHERE title like ? OR memo like ?;";
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, keyword);
+			pstmt.setString(2, keyword);
+			ResultSet rs = pstmt.executeQuery();
+			while(rs.next()) {
+				int id = rs.getInt("id");
+				String category = rs.getString("category");
+				String title = rs.getString("title");
+				String description = rs.getString("memo");
+				String due_date = rs.getString("due_date");
+				String current_date = rs.getString("current_date");
+				TodoItem t = new TodoItem(title,description,category,due_date);
+				t.setId(id);
+				t.setCurrent_date(current_date);
+				list.add(t);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return list;
+	}
+
+	public ArrayList<String> getCategories() {
+		ArrayList<String> list = new ArrayList<String>();
+		Statement stmt;
+		try {
+			stmt = conn.createStatement();
+			String sql = "SELECT DISTINCT category FROM list";
+			ResultSet rs = stmt.executeQuery(sql);
+			while(rs.next()) {
+				String category = rs.getString("category");
+				list.add(category);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return list;
+	}
+	
+	public ArrayList<TodoItem> getListCategory(String keyword) {
+		ArrayList<TodoItem> list = new ArrayList<TodoItem>();
+		PreparedStatement pstmt;
+		String sql = "SELECT * FROM list WHERE category = ?";
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, keyword);
+			ResultSet rs = pstmt.executeQuery();
+			while(rs.next()) {
+				int id = rs.getInt("id");
+				String category = rs.getString("category");
+				String title = rs.getString("title");
+				String description = rs.getString("memo");
+				String due_date = rs.getString("due_date");
+				String current_date = rs.getString("current_date");
+				TodoItem t = new TodoItem(title,description,category,due_date);
+				t.setId(id);
+				t.setCurrent_date(current_date);
+				list.add(t);
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return list;
+	}
+	
+	public ArrayList<TodoItem> getOrderedList(String orderby, int ordering) {
+		ArrayList<TodoItem> list = new ArrayList<TodoItem>();
+		Statement stmt;
+		try {
+			stmt = conn.createStatement();
+			String sql = "SELECT * FROM list ORDER BY "+ orderby;
+			if(ordering==0)
+				sql +=" desc";
 			ResultSet rs = stmt.executeQuery(sql);
 			while(rs.next()) {
 				int id = rs.getInt("id");
@@ -101,18 +231,29 @@ public class TodoList {
 		return list.indexOf(t);
 	}
 
-	public Boolean isDuplicate(String title) {
-		for (TodoItem item : list) {
-			if (title.equals(item.getTitle())) return true;
+	public int isDuplicate(String title) {
+		PreparedStatement pstmt;
+		int count=0;
+		String sql = "SELECT * FROM list WHERE title = ?";
+		try {
+			pstmt = conn.prepareStatement(sql);
+			pstmt.setString(1, title);
+			ResultSet rs = pstmt.executeQuery();
+			while(rs.next()) {
+				count++;
+			}
+		} catch (SQLException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
-		return false;
+		return count;
 	}
 	
 	public void importData(String filename) {
 		try {
 			BufferedReader br = new BufferedReader(new FileReader(filename));
 			String line; String sql = "insert into list (title, memo, category, current_date, due_date)"
-									+ "values(?,?,?,?,?)";
+									+ "values(?,?,?,?,?);";
 			int records = 0;
 			while((line = br.readLine()) != null) {
 				StringTokenizer st = new StringTokenizer(line,"##");

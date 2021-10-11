@@ -12,6 +12,7 @@ public class TodoMain {
 	
 		Scanner sc = new Scanner(System.in);
 		TodoList l = new TodoList();
+		//l.importData("todoList.txt");
 		boolean isList = false;
 		boolean quit = false;
 		TodoUtil.loadList(l, "todoList.txt");
@@ -40,42 +41,38 @@ public class TodoMain {
 				TodoUtil.listAll(l);
 				break;
 
-			case "ls_name_asc":
+			case "ls_name":
 				System.out.println("< 제목 순으로 목록 정렬 >");
-				l.sortByName();
-				isList = true;
+				TodoUtil.listAll(l,"title",1);
 				break;
 
 			case "ls_name_desc":
 				System.out.println("< 제목 역순으로 목록 정렬 >");
-				l.sortByName();
-				l.reverseList();
-				isList = true;
+				TodoUtil.listAll(l,"title",0);
 				break;
 				
 			case "ls_date":
 				System.out.println("< 날짜 순으로 목록 정렬 >");
-				l.sortByDate();
-				isList = true;
+				TodoUtil.listAll(l,"due_date",1);
 				break;
 				
 			case "ls_date_desc":
 				System.out.println("< 날짜 역순으로 목록 정렬 >");
-				l.sortByDate();
-				l.reverseList();
-				isList = true;
+				TodoUtil.listAll(l,"due_date",0);
 				break;
 				
 			case "ls_cate":
-				TodoUtil.listCate(l);
+				TodoUtil.listCateAll(l);
 				break;
 				
 			case "find":
-				TodoUtil.findKey(l);
+				String keyword = sc.nextLine().trim();
+				TodoUtil.findKey(l,keyword);
 				break;
 				
 			case "find_cate":
-				TodoUtil.findCate(l);
+				String cate = sc.nextLine().trim();
+				TodoUtil.findCateList(l,cate);
 				break;
 				
 			case "help":

@@ -9,7 +9,7 @@ public class Menu {
         System.out.println("del          - 일정 삭제");
         System.out.println("edit         - 일정 편집");
         System.out.println("ls           - 일정 목록");
-        System.out.println("ls_name_asc  - 이름 순 정렬 목록");
+        System.out.println("ls_name      - 이름 순 정렬 목록");
         System.out.println("ls_name_desc - 이름 역순 정렬 목록");
         System.out.println("ls_date      - 날짜 순 정렬 목록");
         System.out.println("ls_date_desc - 날짜 역순 정렬 목록(최신순)");
